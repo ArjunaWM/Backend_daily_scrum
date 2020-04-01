@@ -57,6 +57,48 @@ class DailyController extends Controller
       	}
     }
 
+    public function getAll($limit = 10, $offset = 0, $id)
+    {
+    	try{
+	        $data["count"] = Daily::count();
+	        $daily = array();
+	        $dataDaily = DB::table('daily_scrum')->join('user','user.id','=','daily_scrum.id_user')
+                                               ->select('daily_scrum.id', 'user.firstname','user.lastname','user.email', 
+                                               'daily_scrum.team','daily_scrum.id_user','daily_scrum.activity_yesterday',
+                                               'daily_scrum.activity_today','daily_scrum.problem_yesterday','daily_scrum.solution')
+                                               ->skip($offset)
+                                               ->take($limit)
+                                               ->where('daily_scrum.id', '=', $id)
+	                                           ->get();
+
+	        foreach ($dataDaily as $p) {
+	            $item = [
+                    "id"          		    => $p->id,
+                    "id_user"               => $p->id_user,
+	                "firstname"  		    => $p->firstname,
+	                "lastname"  			=> $p->lastname,
+	                "email"    	  		    => $p->email,
+	                "team"  		        => $p->team,
+                    "activity_yesterday"  	=> $p->activity_yesterday,
+                    "activity_today"  	    => $p->activity_today,
+	                "problem_yesterday"	    => $p->problem_yesterday,
+                    "solution"              => $p->solution,
+	            ];
+
+	            array_push($daily, $item);
+	        }
+	        $data["daily"] = $daily;
+	        $data["status"] = 1;
+	        return response($data);
+
+	    } catch(\Exception $e){
+			return response()->json([
+			  'status' => '0',
+			  'message' => $e->getMessage()
+			]);
+      	}
+    }
+
     /**
      * Show the form for creating a new resource.
      *
@@ -165,7 +207,7 @@ class DailyController extends Controller
         try{
 
             $delete = Daily::where("id", $id)->delete();
-            
+
             if($delete){
               return response([
                 "status"  => 1,
