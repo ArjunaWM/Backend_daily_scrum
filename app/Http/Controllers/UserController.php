@@ -106,7 +106,7 @@ class UserController extends Controller
 
 		return response()->json([
 			'status'	=> '1',
-            'message'	=> 'User berhasil ditambahkan',
+            'message'	=> 'Selamat anda berhasil registrasi',
             'token'     => $token,
 		], 201);
 	}
@@ -154,7 +154,7 @@ class UserController extends Controller
 
 		 return response()->json([
 		 		"auth"      => true,
-                "user"    => $user
+                "user"    	=> $user
 		 ], 201);
 	}
 }

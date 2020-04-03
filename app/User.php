@@ -10,6 +10,10 @@ use Tymon\JWTAuth\Contracts\JWTSubject;
 
 class User extends Authenticatable implements JWTSubject
 {
+    public function daily_scrum(){
+        return $this->hasMany('App\Daily');
+    }
+
     use Notifiable;
     
     protected $table = "user"; 

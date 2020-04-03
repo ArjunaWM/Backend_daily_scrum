@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Tymon\JWTAuth\Exceptions\JWTException;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Http\Request;
+use JWTAuth;
 
 use App\Daily;
 use App\User;
@@ -26,7 +27,8 @@ class DailyController extends Controller
                                                      ->select('daily_scrum.id', 'user.firstname', 'user.lastname',
                                                           'user.email', 'daily_scrum.id_user', 'daily_scrum.team',
                                                           'daily_scrum.activity_yesterday', 'daily_scrum.activity_today',
-                                                          'daily_scrum.problem_yesterday', 'daily_scrum.solution')                                                   
+                                                          'daily_scrum.problem_yesterday', 'daily_scrum.solution',
+                                                          'daily_scrum.created_at')                                                   
 	                                                 ->get();
 
 	        foreach ($dataDaily as $p) {
@@ -40,7 +42,9 @@ class DailyController extends Controller
 	                "activity_yesterday"  		                        => $p->activity_yesterday,
 	                "activity_today"  		   		                    => $p->activity_today,
 	                "problem_yesterday"  			      	            => $p->problem_yesterday,
-                  	"solution"        		                            => $p->solution,
+                    "solution"        		                            => $p->solution,
+                    "created_at"                                        => $p->created_at,
+                    "tanggal" 			                                => date('j F Y', strtotime($p->created_at)),
 	            ];
 
 	            array_push($daily, $item);
@@ -57,7 +61,7 @@ class DailyController extends Controller
       	}
     }
 
-    public function getAll($limit = 10, $offset = 0, $id)
+    public function getAll($limit = 10, $offset = 0, $id_user)
     {
     	try{
 	        $data["count"] = Daily::count();
@@ -65,10 +69,11 @@ class DailyController extends Controller
 	        $dataDaily = DB::table('daily_scrum')->join('user','user.id','=','daily_scrum.id_user')
                                                ->select('daily_scrum.id', 'user.firstname','user.lastname','user.email', 
                                                'daily_scrum.team','daily_scrum.id_user','daily_scrum.activity_yesterday',
-                                               'daily_scrum.activity_today','daily_scrum.problem_yesterday','daily_scrum.solution')
+                                               'daily_scrum.activity_today','daily_scrum.problem_yesterday','daily_scrum.solution',
+                                               'daily_scrum.created_at')
                                                ->skip($offset)
                                                ->take($limit)
-                                               ->where('daily_scrum.id', '=', $id)
+                                               ->where('daily_scrum.id_user', '=', $id_user)
 	                                           ->get();
 
 	        foreach ($dataDaily as $p) {
@@ -83,6 +88,8 @@ class DailyController extends Controller
                     "activity_today"  	    => $p->activity_today,
 	                "problem_yesterday"	    => $p->problem_yesterday,
                     "solution"              => $p->solution,
+                    "created_at"            => $p->created_at,
+                    "tanggal" 			    => date('j F Y', strtotime($p->created_at)),
 	            ];
 
 	            array_push($daily, $item);
@@ -119,7 +126,6 @@ class DailyController extends Controller
     {
         try{
     		$validator = Validator::make($request->all(), [
-                'id_user'    		    => 'required|numeric',
                 'team'    	            => 'required|string|max:255',           
 	            'activity_yesterday'    => 'required|string|max:255',
 	            'activity_today'  		=> 'required|string|max:255',
@@ -134,27 +140,21 @@ class DailyController extends Controller
     			]);
     		}
 
-    		if(User::where('id', $request->input('id_user'))->count() > 0){
-    				$data = new Daily();
-              		$data->id_user              = $request->input('id_user');
-			        $data->team                 = $request->input('team');
-			        $data->activity_yesterday   = $request->input('activity_yesterday');
-			        $data->activity_today       = $request->input('activity_today');
-			        $data->problem_yesterday    = $request->input('problem_yesterday');
-			        $data->solution             = $request->input('solution');
-			        $data->save();
+            $data = new Daily();  
+	        $data->id_user = JWTAuth::user()->id;
+	        $data->team = $request->input('team');
+	        $data->activity_yesterday = $request->input('activity_yesterday');
+            $data->activity_today = $request->input('activity_today');
+	        $data->problem_yesterday = $request->input('problem_yesterday');
+	        $data->solution = $request->input('solution');
+	        $data->save();
 
-		    		return response()->json([
-		    			'status'	=> '1',
-		    			'message'	=> 'Data daily berhasil ditambahkan!'
-		    		], 201);
-    			} else {
-    			    return response()->json([
-	                    'status' => '0',
-	                    'message' => 'Data user tidak ditemukan.'
-	            ]);
-    		}
-        } catch(\Exception $e){
+    		return response()->json([
+    			'status'	=> '1',
+    			'message'	=> 'Data Daily Scrum berhasil ditambahkan!'
+    		], 201);
+
+      } catch(\Exception $e){
             return response()->json([
                 'status' => '0',
                 'message' => $e->getMessage()
@@ -211,12 +211,12 @@ class DailyController extends Controller
             if($delete){
               return response([
                 "status"  => 1,
-                  "message"   => "Data Input pelanggaran berhasil dihapus."
+                  "message"   => "Data Daily Scrum berhasil dihapus."
               ]);
             } else {
               return response([
                 "status"  => 0,
-                  "message"   => "Data Input pelanggaran gagal dihapus."
+                  "message"   => "Data Daily Scrum gagal dihapus."
               ]);
             }
             
