@@ -21,15 +21,15 @@ class DailyController extends Controller
     public function index()
     {
         try{
-                $data["count"] = Daily::count();
-	            $daily = array();
-                $dataDaily = DB::table('daily_scrum')->join('user','user.id','=','daily_scrum.id_user')
-                                                     ->select('daily_scrum.id', 'user.firstname', 'user.lastname',
-                                                          'user.email', 'daily_scrum.id_user', 'daily_scrum.team',
-                                                          'daily_scrum.activity_yesterday', 'daily_scrum.activity_today',
-                                                          'daily_scrum.problem_yesterday', 'daily_scrum.solution',
-                                                          'daily_scrum.created_at')                                                   
-	                                                 ->get();
+            $data["count"] = Daily::count();
+	        $daily = array();
+            $dataDaily = DB::table('daily_scrum')->join('user','user.id','=','daily_scrum.id_user')
+                                                 ->select('daily_scrum.id', 'user.firstname', 'user.lastname',
+                                                         'user.email', 'daily_scrum.id_user', 'daily_scrum.team',
+                                                         'daily_scrum.activity_yesterday', 'daily_scrum.activity_today',
+                                                         'daily_scrum.problem_yesterday', 'daily_scrum.solution',
+                                                         'daily_scrum.created_at')                                                   
+	                                             ->get();
 
 	        foreach ($dataDaily as $p) {
 	            $item = [
@@ -67,14 +67,14 @@ class DailyController extends Controller
 	        $data["count"] = Daily::count();
 	        $daily = array();
 	        $dataDaily = DB::table('daily_scrum')->join('user','user.id','=','daily_scrum.id_user')
-                                               ->select('daily_scrum.id', 'user.firstname','user.lastname','user.email', 
-                                               'daily_scrum.team','daily_scrum.id_user','daily_scrum.activity_yesterday',
-                                               'daily_scrum.activity_today','daily_scrum.problem_yesterday','daily_scrum.solution',
-                                               'daily_scrum.created_at')
-                                               ->skip($offset)
-                                               ->take($limit)
-                                               ->where('daily_scrum.id_user', '=', $id_user)
-	                                           ->get();
+                                                 ->select('daily_scrum.id', 'user.firstname','user.lastname','user.email', 
+                                                 'daily_scrum.team','daily_scrum.id_user','daily_scrum.activity_yesterday',
+                                                 'daily_scrum.activity_today','daily_scrum.problem_yesterday',
+                                                 'daily_scrum.solution','daily_scrum.created_at')
+                                                 ->skip($offset)
+                                                 ->take($limit)
+                                                 ->where('daily_scrum.id_user', '=', $id_user)
+	                                             ->get();
 
 	        foreach ($dataDaily as $p) {
 	            $item = [
@@ -193,7 +193,41 @@ class DailyController extends Controller
      */
     public function update(Request $request, $id)
     {
-        //
+        try{
+    		$validator = Validator::make($request->all(), [
+                'team'    	            => 'required|string|max:255',           
+	            'activity_yesterday'    => 'required|string|max:255',
+	            'activity_today'  		=> 'required|string|max:255',
+	            'problem_yesterday'     => 'required|string|max:255',
+                'solution'              => 'required|string|max:255',
+    		]);
+
+    		if($validator->fails()){
+    			return response()->json([
+    				'status'	=> 0,
+    				'message'	=> $validator->errors()
+    			]);
+    		}
+  
+            $data = Daily::where('id', $id)->first();
+	        $data->team = $request->input('team');
+	        $data->activity_yesterday = $request->input('activity_yesterday');
+            $data->activity_today = $request->input('activity_today');
+	        $data->problem_yesterday = $request->input('problem_yesterday');
+	        $data->solution = $request->input('solution');
+	        $data->save();
+  
+            return response()->json([
+                'status'	=> '1',
+                'message'	=> 'Data Daily Scrum berhasil diubah'
+            ]);
+          
+        } catch(\Exception $e){
+            return response()->json([
+                'status' => '0',
+                'message' => $e->getMessage()
+            ]);
+        }
     }
 
     /**

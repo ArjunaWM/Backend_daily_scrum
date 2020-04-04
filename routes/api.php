@@ -28,5 +28,6 @@ Route::group(['middleware' => ['jwt.verify']], function () {
     Route::get('daily', "DailyController@index");
     Route::get('daily/{limit}/{offset}/{id_user}', "DailyController@getAll");
     Route::post('daily', "DailyController@store");
+    Route::put('daily/{id}', "DailyController@update");;
     Route::delete('daily/{id}', "DailyController@destroy");
 });
