@@ -111,6 +111,37 @@ class UserController extends Controller
 		], 201);
 	}
 	
+	public function update(Request $request)
+	{
+		$validator = Validator::make($request->all(), [
+			'firstname'     => 'required|string|max:255',
+			'lastname'      => 'required|string|max:255',
+			'email'         => 'required|string|email|max:255|unique:user',
+			'password'      => 'required|string|min:6|confirmed',
+		]);
+
+		if($validator->fails()){
+			return response()->json([
+				'status'	=> '0',
+				'message'	=> $validator->errors()
+			]);
+		}
+
+		//proses update data
+		$user = User::where('id', $request->id)->first();
+		$user->firstname 	= $request->firstname;
+		$user->lastname 	= $request->lastname;
+		$user->email 	    = $request->email;
+		$user->password     = Hash::make($request->password);
+		$user->save();
+
+
+		return response()->json([
+			'status'	=> '1',
+			'message'	=> 'Petugas berhasil diubah'
+		], 201);
+	}
+
 	public function Logout(Request $request)
     {
 

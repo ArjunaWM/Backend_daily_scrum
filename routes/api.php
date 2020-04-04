@@ -24,6 +24,7 @@ Route::group(['middleware' => ['jwt.verify']], function () {
     
     Route::get('user', "UserController@index");
     Route::get('user/{limit}/{offset}', "UserController@getAll");
+    Route::put('user/{id}', "UserController@update");
     
     Route::get('daily', "DailyController@index");
     Route::get('daily/{limit}/{offset}/{id_user}', "DailyController@getAll");
